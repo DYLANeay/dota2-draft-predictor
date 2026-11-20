@@ -1,0 +1,5 @@
+# Unfinished Chrome downloads
+*.crdownload
+
+# Project data (large zip downloaded from Dropbox, never commit to GitHub)
+dota_games_final.zip
