@@ -5,18 +5,18 @@ Projet pour Molde Dotaklubb : implémenter la partie ML d'une page web de prédi
 ## Livrables
 
 - Zip final contenant : le rapport (PDF) + le code.
-- Rapport : description technique et informelle, bullet lists, pas besoin d'être joli. Sert de cheat sheet pour la présentation. Template LaTeX dans `project_template/` (style arXiv).
+- Rapport : description technique et informelle, bullet lists, pas besoin d'être joli. Sert de cheat sheet pour la présentation. Template LaTeX dans `report/` (style arXiv).
 - Présentation orale en 2 parties : technique (comment ça marche) + tournée vers Molde Dotaklubb (comment utiliser l'outil pour améliorer leur drafting).
 - Le projet n'est livré qu'après la présentation orale. Deadline pas encore fixée.
 
 ## Ce qui est déjà là (ne pas réinventer)
 
-- `dota_web_framework/dota-oracle/` : framework fourni. App Flask + agent LLM (llm-interaction, DeepSeek) fonctionnels. UI de pick/ban (5 picks + 7 bans par équipe, Radiant/Dire) + boîte "Ask".
+- `code/` : framework fourni. App Flask + agent LLM (llm-interaction, DeepSeek) fonctionnels. UI de pick/ban (5 picks + 7 bans par équipe, Radiant/Dire) + boîte "Ask".
 - README complet dedans : `uv sync`, `.env` avec `LLM_INTERACTION_API_KEY`, `uv run pytest`, `uv run dota-oracle`.
-- `doracle/model.py` : HeroStats placeholder qui renvoie des valeurs aléatoires → la partie à remplacer par un vrai modèle entraîné.
-- `doracle/tools.py` : tools existants = `resolve_hero`, `list_heroes`, `hero_stats` (branché sur le placeholder), `submit_answer` → à étendre.
-- `doracle/heroes.py` + `data/heroes.json` : roster, alias de noms, correspondance hero id → nom.
-- `project_template/` : template LaTeX (arxiv.sty, template.tex, references.bib).
+- `code/doracle/model.py` : HeroStats placeholder qui renvoie des valeurs aléatoires → la partie à remplacer par un vrai modèle entraîné.
+- `code/doracle/tools.py` : tools existants = `resolve_hero`, `list_heroes`, `hero_stats` (branché sur le placeholder), `submit_answer` → à étendre.
+- `code/doracle/heroes.py` + `code/doracle/data/heroes.json` : roster, alias de noms, correspondance hero id → nom.
+- `report/` : template LaTeX (arxiv.sty, template.tex, references.bib).
 - Les données ne sont PAS dans le repo : à télécharger.
 
 ## À faire
@@ -25,16 +25,16 @@ Projet pour Molde Dotaklubb : implémenter la partie ML d'une page web de prédi
    - Télécharger : https://www.dropbox.com/scl/fi/sf8tyklvcc8b9e3751jis/dota_games_final.zip?rlkey=bf05l2b2euy6c6ukobraqm5pt&st=izqh8n7i&dl=0
    - Format JSON spécifié sur https://wiki.teamfortress.com/wiki/WebAPI/GetMatchDetails
    - Filtrer les matchs et documenter inclusion/exclusion (question 1 du rapport).
-   - id → nom via `data/heroes.json`.
+   - id → nom via `code/doracle/data/heroes.json`.
 
 2. **Modèle**
    - Algo parmi ceux vus en classe : Logistic Regression, Linear Regression, MLP 2 couches, ou Fortuna.
    - Implémentation perso valorisée ; sinon scikit-learn autorisé.
    - Définir features + hyper-paramètres (à documenter dans le rapport).
-   - Remplacer le placeholder `doracle/model.py` par le vrai modèle entraîné.
+   - Remplacer le placeholder `code/doracle/model.py` par le vrai modèle entraîné.
 
 3. **Tools de l'agent LLM**
-   - Étendre `doracle/tools.py` pour couvrir les questions requises. Exemples attendus :
+   - Étendre `code/doracle/tools.py` pour couvrir les questions requises. Exemples attendus :
      - hero au plus haut winrate en ranked ;
      - meilleur hero en synergie avec le hero X ;
      - que drafter maintenant (contexte fourni par l'interface web) ;
@@ -64,7 +64,7 @@ Projet pour Molde Dotaklubb : implémenter la partie ML d'une page web de prédi
 6. **Rapport**
    - Contenu exigé : entraînement du modèle, features, hyper-paramètres ; liste des tools exposés au LLM et leur usage ; réponses aux 12 questions.
    - Style : bullets, technique et informel, pas de mise en page soignée.
-   - Utiliser le template LaTeX `project_template/` (voir aussi report_outline.pdf sur Canvas).
+   - Utiliser le template LaTeX `report/` (voir aussi report_outline.pdf sur Canvas).
 
 7. **Présentation orale**
    - Partie 1 : technique (comment ça marche).
