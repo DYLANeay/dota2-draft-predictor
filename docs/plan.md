@@ -20,5 +20,4 @@ Détail des tâches dans `docs/TODO.md`. Deadline pas encore fixée.
 - Co-rédaction du rapport (sections usage club)
 - Packaging : zip final (rapport PDF + code)
 
-- Présentation technique : Simon ou Cem (pas Dylan).
-- ⚠️ Répartition Simon et Cem = propositions, à valider en équipe ; seule la présentation business de Cem est confirmée.
+- Présentation technique : all ? Aussi le rapport je pense faire en partie ma partie.
