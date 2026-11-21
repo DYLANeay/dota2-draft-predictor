@@ -4,3 +4,12 @@
 # Project data (large files, never commit to GitHub)
 data/*
 !data/.gitkeep
+
+# LaTeX build artifacts (regenerate with latexmk -pdf from report/)
+report/*.aux
+report/*.log
+report/*.out
+report/*.pdf
+report/*.fls
+report/*.fdb_latexmk
+report/*.synctex.gz

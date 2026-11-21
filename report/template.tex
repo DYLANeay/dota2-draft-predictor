@@ -17,33 +17,14 @@
 
 
 \author{
-  David S.~Hippocampus \\
-  Department of Computer Science\\
-  Cranberry-Lemon University\\
-  Pittsburgh, PA 15213 \\
-  \texttt{hippo@cs.cranberry-lemon.edu} \\
-  %% examples of more authors
-   \And
- Elias D.~Striatum \\
-  Department of Electrical Engineering\\
-  Mount-Sheikh University\\
-  Santa Narimana, Levand \\
-  \texttt{stariate@ee.mount-sheikh.edu} \\
-  %% \AND
-  %% Coauthor \\
-  %% Affiliation \\
-  %% Address \\
-  %% \texttt{email} \\
-  %% \And
-  %% Coauthor \\
-  %% Affiliation \\
-  %% Address \\
-  %% \texttt{email} \\
-  %% \And
-  %% Coauthor \\
-  %% Affiliation \\
-  %% Address \\
-  %% \texttt{email} \\
+  Dylan Eray \\
+  University of Agder
+  \And
+  Cem Durand \\
+  University of Agder
+  \And
+  Simon Leroy \\
+  University of Agder
 }
 
 \begin{document}
@@ -59,14 +40,84 @@ An abstract is a short summary of a longer work. The abstract concisely reports 
 
 
 \section{Introduction}
-Give a brief overview of the problem you are going to solve and possible challenges. 
+Our client is Molde Dotaklubb, an esport club that plays Dota 2 and wants to get better at drafting. We built them a web page where you pick and ban heroes for both teams, and it gives two things: a win prediction for the current draft, from a model trained on real matches, and a question agent. You type something like "what should I draft now" and the agent answers from our match statistics, not from its own knowledge. The statistics come from 2.3 million ranked matches played in September and October 2020.
+
+The main challenges:
+\begin{itemize}
+    \item The data is from 2020, so it does not match modern Dota 2. The agent must answer from our stats and never from LLM knowledge.
+    \item Some matches are abandoned (a 4 versus 5). We drop them so the prediction reflects the draft, not a missing player.
+    \item We keep the solution simple: logistic regression first, then a small 2-layer MLP.
+\end{itemize}
 
 \section{Method}
 This section will cover how what machine learning algorithm you have used and the data flow/preprocessing.
 Start with an overview, e.g., what ML algorithm forms the basis for your project (logistic regression, random forest, ... ). And why you selected this particular algorithm? What are the pros and cons?
 
 \subsection{Data}
-This section should describe the training data: What features you have used including any feature engineering you have done. 
+The training data is a big archive of ranked Dota 2 matches. This part explains where it comes from, what we kept, what we dropped, and what files we built from it.
+
+\subsubsection*{Source}
+\begin{itemize}
+    \item 2,338,043 ranked matches (lobby type 7 only), played between September and October 2020.
+    \item One JSON file per match, all packed in a single 7.6 GB zip (about 29 GB uncompressed).
+    \item Each file uses the Steam Web API \texttt{GetMatchDetails} format, with everything under one root key \texttt{result}.
+\end{itemize}
+
+\subsubsection*{Filtering}
+We only keep a match if ten human players played it to the end and the draft is valid. Table~\ref{tab:exclusions} shows what these checks did to the full archive.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lr}
+\toprule
+Criterion & Matches \\
+\midrule
+Included (all criteria passed) & 2,163,221 \\
+Excluded, player abandoned (\texttt{leaver\_status >= 2}) & 174,810 \\
+Excluded, not 10 human players & 8 \\
+Excluded, invalid draft (missing hero or wrong team slots) & 4 \\
+Excluded, match id mismatch & 0 \\
+\bottomrule
+\end{tabular}
+\caption{Filtering of the 2,338,043 matches. 174,822 matches (7.5\%) were dropped, almost all of them abandons.}
+\label{tab:exclusions}
+\end{table}
+
+Why we drop abandons:
+\begin{itemize}
+    \item An abandoned game is often a 4 versus 5.
+    \item The outcome then says more about the missing player than about the draft.
+    \item Keeping those matches would just pollute the training label.
+\end{itemize}
+
+Things we decided to keep:
+\begin{itemize}
+    \item All game modes: All Pick (88.5\%), Random Draft (11.5\%), and 88 Captain's Mode matches.
+    \item All game durations.
+    \item League games, if we had found any (there were none in this archive).
+    \item The archive is ranked only, so nothing to filter on the lobby side.
+\end{itemize}
+
+\subsubsection*{Processing and outputs}
+One script builds everything (\texttt{code/scripts/build\_dataset.py}). It streams over the archive entries with the Python standard library \texttt{zipfile} module, in a single pass. We never extract the archive to disk.
+
+The outputs:
+\begin{itemize}
+    \item \texttt{matches.csv}: one row per included match, with 11 integers (\texttt{radiant\_1} to \texttt{radiant\_5}, \texttt{dire\_1} to \texttt{dire\_5}, \texttt{radiant\_win}). This is the model training set.
+    \item \texttt{hero\_stats.json}: per-hero pick and win stats, hero pairs (synergy and counter), and first picks. The question agent tools read this file.
+    \item \texttt{exclusion\_report.json}: the counts from Table~\ref{tab:exclusions}, which answers report question 1.
+\end{itemize}
+
+We also ran sanity checks on the result (all passed):
+\begin{itemize}
+    \item Hero picks add up to $10 \times$ the number of included matches.
+    \item Hero wins add up to $5 \times$ the number of included matches.
+    \item Synergy pairs count $20 \times$ the included matches.
+    \item Counter pairs count $50 \times$ the included matches.
+\end{itemize}
+
+Small thing we noticed: Radiant won 50.9\% of the included matches, so the Radiant side has a small but real advantage.
+
 
 \subsection{Model}
 \begin{itemize}
