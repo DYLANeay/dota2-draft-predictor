@@ -25,6 +25,7 @@ from doracle.heroes import get_heroes, get_heroes_by_id
 
 # The ML model files
 from doracle.model import HeroStats
+from doracle.predictor import WEIGHTS_PATH, WinPredictor
 from doracle.tools import TOOLS
 
 package_directory = os.path.dirname(os.path.abspath(__file__))
@@ -158,10 +159,20 @@ def ask():
 # <button 1>
 @app.route("/suggest1", methods=["POST"])
 def suggest1():
-    r = request.get_json()
-    r["todo"] = "Implement 'Predict the Winner' here."
+    r = request.get_json(silent=True) or {}
 
-    return jsonify(r)
+    # Probability that Radiant wins the given (possibly partial) draft.
+    p = get_win_predictor().predict(r.get("radiant", []), r.get("dire", []))
+
+    return jsonify(
+        {
+            "radiant": r.get("radiant", []),
+            "dire": r.get("dire", []),
+            "radiant_win_probability": round(p, 3),
+            "dire_win_probability": round(1 - p, 3),
+            "predicted_winner": "radiant" if p >= 0.5 else "dire",
+        }
+    )
 
 # <button 2>
 @app.route("/suggest2", methods=["POST"])
@@ -221,6 +232,12 @@ def get_hero_stat_model():
 
     hero_stat_model = HeroStats.load(path_to_model)
     return hero_stat_model
+
+
+# Le modèle de prédiction, chargé une seule fois depuis les poids entraînés
+@lru_cache(maxsize=1)
+def get_win_predictor():
+    return WinPredictor.load(WEIGHTS_PATH)
 
 
 def main():
